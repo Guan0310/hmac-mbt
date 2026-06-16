@@ -17,3 +17,44 @@ pub fn zero_pad_to(input : Bytes, size : Int) -> Bytes {
   guard input.length() <= size else { abort("input is longer than target size") }
   input + Bytes::make(size - input.length(), b'\x00')
 }
+
+fn hex_char(value : Int) -> Char {
+  if value < 10 {
+    Int::unsafe_to_char(value + b'0'.to_int())
+  } else {
+    Int::unsafe_to_char(value - 10 + b'a'.to_int())
+  }
+}
+
+/// 将字节编码为小写十六进制字符串。
+pub fn to_hex(input : Bytes) -> String {
+  let output = Buffer(size_hint=input.length() * 2)
+  for byte in input {
+    let value = byte.to_int()
+    output.write_char_utf16le(hex_char((value >> 4) & 0x0f))
+    output.write_char_utf16le(hex_char(value & 0x0f))
+  }
+  output.contents().to_unchecked_string()
+}
+
+fn hex_nibble(ch : UInt16) -> Int {
+  let code = ch.to_int()
+  if code >= b'0'.to_int() && code <= b'9'.to_int() {
+    code - b'0'.to_int()
+  } else if code >= b'a'.to_int() && code <= b'f'.to_int() {
+    code - b'a'.to_int() + 10
+  } else if code >= b'A'.to_int() && code <= b'F'.to_int() {
+    code - b'A'.to_int() + 10
+  } else {
+    abort("invalid hex character")
+  }
+}
+
+fn bytes_from_hex(hex : String) -> Bytes {
+  guard hex.length() % 2 == 0 else { abort("hex string must have even length") }
+  Bytes::makei(hex.length() / 2, i => {
+    let hi = hex_nibble(hex.unsafe_get(i * 2))
+    let lo = hex_nibble(hex.unsafe_get(i * 2 + 1))
+    ((hi << 4) | lo).to_byte()
+  })
+}
