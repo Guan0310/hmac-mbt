@@ -14,6 +14,20 @@ pub fn normalize_key_for_sha256(key : Bytes) -> Bytes {
   zero_pad_to(base_key, sha256_block_size)
 }
 
+fn hmac_pad(key : Bytes, pad_byte : Byte) -> Bytes {
+  xor_bytes(normalize_key_for_sha256(key), Bytes::make(sha256_block_size, pad_byte))
+}
+
+/// 返回 HMAC-SHA256 的 inner pad。
+pub fn inner_pad_for_sha256(key : Bytes) -> Bytes {
+  hmac_pad(key, b'\x36')
+}
+
+/// 返回 HMAC-SHA256 的 outer pad。
+pub fn outer_pad_for_sha256(key : Bytes) -> Bytes {
+  hmac_pad(key, b'\x5c')
+}
+
 /// 返回两个等长字节串的按位 XOR 结果。
 pub fn xor_bytes(left : Bytes, right : Bytes) -> Bytes {
   guard left.length() == right.length() else {
