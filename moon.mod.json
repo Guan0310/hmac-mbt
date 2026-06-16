@@ -1,0 +1,15 @@
+{
+  "name": "Guan0310/hmac",
+  "version": "0.1.0",
+
+  "readme": "README.md",
+  "repository": "https://github.com/Guan0310/hmac-mbt.git",
+  "license": "Apache-2.0",
+  "keywords": [
+    "hmac",
+    "hash",
+    "sha256",
+    "authentication"
+  ],
+  "description": "基于 RFC 2104 的 HMAC-SHA256 MoonBit 实现"
+}
