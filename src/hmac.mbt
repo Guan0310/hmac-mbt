@@ -11,3 +11,9 @@ pub fn xor_bytes(left : Bytes, right : Bytes) -> Bytes {
   }
   Bytes::makei(left.length(), i => left[i] ^ right[i])
 }
+
+/// 用零字节右填充字节串至 `size` 长度。
+pub fn zero_pad_to(input : Bytes, size : Int) -> Bytes {
+  guard input.length() <= size else { abort("input is longer than target size") }
+  input + Bytes::make(size - input.length(), b'\x00')
+}
