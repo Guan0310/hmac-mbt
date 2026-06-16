@@ -4,6 +4,16 @@ pub let sha256_digest_size : Int = 32
 /// SHA-256 块大小（字节数），用于 HMAC key 填充。
 pub let sha256_block_size : Int = 64
 
+/// 将 HMAC key 归一化至恰好一个 SHA-256 block 长度。
+pub fn normalize_key_for_sha256(key : Bytes) -> Bytes {
+  let base_key = if key.length() > sha256_block_size {
+    sha256_digest(key)
+  } else {
+    key
+  }
+  zero_pad_to(base_key, sha256_block_size)
+}
+
 /// 返回两个等长字节串的按位 XOR 结果。
 pub fn xor_bytes(left : Bytes, right : Bytes) -> Bytes {
   guard left.length() == right.length() else {
