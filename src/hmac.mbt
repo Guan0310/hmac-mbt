@@ -64,6 +64,63 @@ test "zero_pad_to" {
   )
 }
 
+test "sha256_digest" {
+  inspect(
+    sha256_digest_hex(b"abc"),
+    content="ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+  )
+}
+
+test "hmac_sha256_hex" {
+  inspect(
+    hmac_sha256_hex(b"key", b"The quick brown fox jumps over the lazy dog"),
+    content="f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8",
+  )
+}
+
+test "hmac_sha256_known_digest" {
+  inspect(
+    hmac_sha256(b"key", b"The quick brown fox jumps over the lazy dog") ==
+    bytes_from_hex(
+      "f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8",
+    ),
+    content="true",
+  )
+}
+
+test "rfc_4231_case_1" {
+  inspect(
+    hmac_sha256(Bytes::make(20, b'\x0b'), b"Hi There") ==
+    bytes_from_hex(
+      "b0344c61d8db38535ca8afceaf0bf12b" +
+      "881dc200c9833da726e9376c2e32cff7",
+    ),
+    content="true",
+  )
+}
+
+test "rfc_4231_case_2" {
+  inspect(
+    hmac_sha256(b"Jefe", b"what do ya want for nothing?") ==
+    bytes_from_hex(
+      "5bdcc146bf60754e6a042426089575c7" +
+      "5a003f089d2739839dec58b964ec3843",
+    ),
+    content="true",
+  )
+}
+
+test "rfc_4231_case_3" {
+  inspect(
+    hmac_sha256(Bytes::make(20, b'\xaa'), Bytes::make(50, b'\xdd')) ==
+    bytes_from_hex(
+      "773ea91e36800e46854db8ebd09181a7" +
+      "2959098b3ef8c122d9635514ced565fe",
+    ),
+    content="true",
+  )
+}
+
 /// 计算 HMAC-SHA256 标签。
 pub fn hmac_sha256(key : Bytes, message : Bytes) -> Bytes {
   let inner_hash = sha256_digest(inner_pad_for_sha256(key) + message)
