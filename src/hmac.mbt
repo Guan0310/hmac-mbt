@@ -28,6 +28,12 @@ pub fn outer_pad_for_sha256(key : Bytes) -> Bytes {
   hmac_pad(key, b'\x5c')
 }
 
+/// 计算 HMAC-SHA256 标签。
+pub fn hmac_sha256(key : Bytes, message : Bytes) -> Bytes {
+  let inner_hash = sha256_digest(inner_pad_for_sha256(key) + message)
+  sha256_digest(outer_pad_for_sha256(key) + inner_hash)
+}
+
 /// 返回两个等长字节串的按位 XOR 结果。
 pub fn xor_bytes(left : Bytes, right : Bytes) -> Bytes {
   guard left.length() == right.length() else {
