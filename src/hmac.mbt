@@ -56,6 +56,11 @@ fn hex_char(value : Int) -> Char {
   }
 }
 
+/// 计算 HMAC-SHA256 标签并以小写十六进制形式返回。
+pub fn hmac_sha256_hex(key : Bytes, message : Bytes) -> String {
+  to_hex(hmac_sha256(key, message))
+}
+
 /// 将字节编码为小写十六进制字符串。
 pub fn to_hex(input : Bytes) -> String {
   let output = Buffer(size_hint=input.length() * 2)
