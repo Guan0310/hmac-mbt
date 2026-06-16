@@ -1,5 +1,9 @@
 {
   "import": [
-    "moonbitlang/core/builtin"
+    "moonbitlang/core/builtin",
+    {
+      "path": "gmlewis/sha256",
+      "alias": "sha256"
+    }
   ]
 }
