@@ -28,6 +28,11 @@ pub fn outer_pad_for_sha256(key : Bytes) -> Bytes {
   hmac_pad(key, b'\x5c')
 }
 
+/// 验证 HMAC-SHA256 标签。
+pub fn verify(key : Bytes, message : Bytes, tag : Bytes) -> Bool {
+  constant_time_equal(hmac_sha256(key, message), tag)
+}
+
 /// 计算 HMAC-SHA256 标签。
 pub fn hmac_sha256(key : Bytes, message : Bytes) -> Bytes {
   let inner_hash = sha256_digest(inner_pad_for_sha256(key) + message)
