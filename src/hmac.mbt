@@ -121,6 +121,110 @@ test "rfc_4231_case_3" {
   )
 }
 
+test "normalize_short_key" {
+  let normalized = normalize_key_for_sha256(b"key")
+  inspect(normalized.length(), content="64")
+  inspect(normalized[3], content="b'\\x00'")
+}
+
+test "normalize_block_key" {
+  let key = Bytes::make(sha256_block_size, b'\x01')
+  let normalized = normalize_key_for_sha256(key)
+  inspect(normalized.length(), content="64")
+  inspect(normalized[63], content="b'\\x01'")
+}
+
+test "normalize_long_key" {
+  let key = Bytes::make(65, b'a')
+  let normalized = normalize_key_for_sha256(key)
+  inspect(normalized.length(), content="64")
+  inspect(normalized[32], content="b'\\x00'")
+}
+
+test "inner_pad" {
+  let pad = inner_pad_for_sha256(b"\x0f")
+  inspect(pad.length(), content="64")
+  inspect(pad[0], content="b'\\x39'")
+}
+
+test "outer_pad" {
+  let pad = outer_pad_for_sha256(b"\x0f")
+  inspect(pad.length(), content="64")
+  inspect(pad[0], content="b'\\x53'")
+}
+
+test "empty_key_and_message" {
+  inspect(
+    hmac_sha256(b"", b"") ==
+    bytes_from_hex(
+      "b613679a0814d9ec772f95d778c35fc5" +
+      "ff1697c493715653c6c712144292c5ad",
+    ),
+    content="true",
+  )
+}
+
+test "empty_message" {
+  inspect(
+    hmac_sha256(b"key", b"") ==
+    bytes_from_hex(
+      "5d5d139563c95b5967b9bd9a8c9b233a" +
+      "9dedb45072794cd232dc1b74832607d0",
+    ),
+    content="true",
+  )
+}
+
+test "verify_match_and_reject" {
+  let tag = hmac_sha256(b"key", b"message")
+  inspect(verify(b"key", b"message", tag), content="true")
+  inspect(verify(b"key", b"message!", tag), content="false")
+}
+
+test "verify_truncated_and_extended" {
+  let tag = hmac_sha256(b"key", b"message")
+  let truncated = Bytes::from_array(tag[:31].to_array())
+  inspect(verify(b"key", b"message", truncated), content="false")
+  inspect(verify(b"key", b"message", tag + b"\x00"), content="false")
+}
+
+test "rfc_4231_long_key" {
+  inspect(
+    hmac_sha256(Bytes::make(131, b'\xaa'), b"Test Using Larger Than Block-Size Key - Hash Key First") ==
+    bytes_from_hex(
+      "60e431591ee0b67f0d8a26aacbf5b77f" +
+      "8e0bc6213728c5140546040f0ee37f54",
+    ),
+    content="true",
+  )
+}
+
+test "long_key_long_data" {
+  inspect(
+    hmac_sha256(
+      Bytes::make(131, b'\xaa'),
+      b"This is a test using a larger than block-size key and a larger than block-size data. The key needs to be hashed before being used by the HMAC algorithm.",
+    ) ==
+    bytes_from_hex(
+      "9b09ffa71b942fcb27635fbcd5b0e944" +
+      "bfdc63644f0713938a7f51535c3a35e2",
+    ),
+    content="true",
+  )
+}
+
+test "constant_time_equal_match" {
+  inspect(constant_time_equal(b"abc", b"abc"), content="true")
+  inspect(constant_time_equal(b"abc", b"abd"), content="false")
+  inspect(constant_time_equal(b"abc", b"abcd"), content="false")
+}
+
+test "constant_time_equal_empty" {
+  inspect(constant_time_equal(b"", b"\x00"), content="false")
+  inspect(constant_time_equal(b"\x00", b""), content="false")
+  inspect(constant_time_equal(b"abc", b"abc\x00"), content="false")
+}
+
 /// 计算 HMAC-SHA256 标签。
 pub fn hmac_sha256(key : Bytes, message : Bytes) -> Bytes {
   let inner_hash = sha256_digest(inner_pad_for_sha256(key) + message)
