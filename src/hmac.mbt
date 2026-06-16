@@ -42,6 +42,30 @@ pub fn xor_bytes(left : Bytes, right : Bytes) -> Bytes {
   Bytes::makei(left.length(), i => left[i] ^ right[i])
 }
 
+/// 恒定时间比较两个标签，不提前退出。
+///
+/// 对不同长度的输入，扫描较长者并将缺失字节视为零。
+pub fn constant_time_equal(left : Bytes, right : Bytes) -> Bool {
+  let max_len = if left.length() > right.length() {
+    left.length()
+  } else {
+    right.length()
+  }
+  let mut diff = left.length() ^ right.length()
+  for i in 0..<max_len {
+    let left_byte = match left.get(i) {
+      Some(byte) => byte.to_int()
+      None => 0
+    }
+    let right_byte = match right.get(i) {
+      Some(byte) => byte.to_int()
+      None => 0
+    }
+    diff = diff | (left_byte ^ right_byte)
+  }
+  diff == 0
+}
+
 /// 用零字节右填充字节串至 `size` 长度。
 pub fn zero_pad_to(input : Bytes, size : Int) -> Bytes {
   guard input.length() <= size else { abort("input is longer than target size") }
