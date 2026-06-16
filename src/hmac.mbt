@@ -33,6 +33,37 @@ pub fn verify(key : Bytes, message : Bytes, tag : Bytes) -> Bool {
   constant_time_equal(hmac_sha256(key, message), tag)
 }
 
+test "xor_bytes" {
+  inspect(
+    xor_bytes(b"\x0f\xf0", b"\xf0\x0f"),
+    content=(
+      #|b"\xff\xff"
+    ),
+  )
+}
+
+test "bytes_from_hex" {
+  inspect(
+    bytes_from_hex("0aFF"),
+    content=(
+      #|b"\x0a\xff"
+    ),
+  )
+}
+
+test "to_hex" {
+  inspect(to_hex(b"\x00\x0f\x10\xff"), content="000f10ff")
+}
+
+test "zero_pad_to" {
+  inspect(
+    zero_pad_to(b"key", 5),
+    content=(
+      #|b"key\x00\x00"
+    ),
+  )
+}
+
 /// 计算 HMAC-SHA256 标签。
 pub fn hmac_sha256(key : Bytes, message : Bytes) -> Bytes {
   let inner_hash = sha256_digest(inner_pad_for_sha256(key) + message)
