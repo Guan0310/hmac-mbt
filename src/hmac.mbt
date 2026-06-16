@@ -37,6 +37,18 @@ pub fn to_hex(input : Bytes) -> String {
   output.contents().to_unchecked_string()
 }
 
+fn sha256_digest_hex(input : Bytes) -> String {
+  let digest = @sha256.Digest::new()
+  for byte in input {
+    digest.write(byte)
+  }
+  digest.check_sum()
+}
+
+fn sha256_digest(input : Bytes) -> Bytes {
+  bytes_from_hex(sha256_digest_hex(input))
+}
+
 fn hex_nibble(ch : UInt16) -> Int {
   let code = ch.to_int()
   if code >= b'0'.to_int() && code <= b'9'.to_int() {
