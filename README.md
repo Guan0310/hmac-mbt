@@ -56,6 +56,6 @@ moon test
 
 ## 许可
 
-Apache-2.0
+MIT
 
 本仓库的 HMAC 构造由 `hmac-mbt` 实现，SHA-256 摘要计算由 MoonBit 包 `gmlewis/sha256` 提供。
